@@ -10,10 +10,13 @@ The server is built using Python and the [FastMCP](https://github.com/metr/fastm
 
 ## Features
 
-*   Provides MCP tools for various Goatcounter API endpoints.
-*   Handles authentication with the Goatcounter API using an API token.
-*   Structured request/response handling using Pydantic models.
-*   Graceful error handling for API client errors.
+*   Provides tools for most Goatcounter API endpoints.
+*   Handles API key and site code configuration via environment variables (`GOATCOUNTER_API_KEY`, `GOATCOUNTER_CODE`).
+*   Lazy initialization of the API client: Tools can be listed even if API credentials are not yet configured.
+*   **Rate Limit Handling**: Implements automatic retries with backoff when encountering API rate limits (HTTP 429).
+    *   Prioritizes the `X-Rate-Limit-Reset` header for waiting if provided by the API.
+    *   Falls back to exponential backoff (starting at 1 second) with random jitter if the header is unavailable or invalid.
+    *   Retries up to 5 times before failing.
 *   Runs directly using the `fastmcp` command-line tool.
 
 ## Installation
@@ -31,6 +34,12 @@ The easiest way to install `goatcounter-mcp-server` is via PyPI:
 
 ```bash
 pip install goatcounter-mcp-server
+```
+
+Or install directly from the repository:
+
+```bash
+pip install git+https://github.com/rafaljanicki/goatcounter-mcp-server.git
 ```
 
 ### Option 3: Install from Source
@@ -86,7 +95,7 @@ uv run goatcounter-mcp-server
 ```
 
 ### Option 2: Using FastMCP Directly (Source Only)
-If you installed from source and prefer to run the server using FastMCP’s development mode:
+If you installed from source and prefer to run the server using FastMCP's development mode:
 
 ```bash
 fastmcp dev src/goatcounter_mcp_server/main.py
@@ -97,7 +106,7 @@ fastmcp dev src/goatcounter_mcp_server/main.py
 To use this MCP server with Claude Desktop, you need to configure Claude to connect to the server. Follow these steps:
 
 ### Step 1: Install Node.js
-Claude Desktop uses Node.js to run MCP servers. If you don’t have Node.js installed:
+Claude Desktop uses Node.js to run MCP servers. If you don't have Node.js installed:
 - Download and install Node.js from [nodejs.org](https://nodejs.org/).
 - Verify installation:
   ```bash
@@ -110,7 +119,7 @@ Claude Desktop uses a `claude_desktop_config.json` file to configure MCP servers
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
-If the file doesn’t exist, create it.
+If the file doesn't exist, create it.
 
 ### Step 3: Configure the MCP Server
 Edit `claude_desktop_config.json` to include the `goatcounter-mcp-server` server. Replace `/path/to/goatcounter-mcp-server` with the actual path to your project directory (if installed from source) or the path to your Python executable (if installed from PyPI).
@@ -155,7 +164,7 @@ If installed from source with `uv`:
 ```
 
 - `"command": "goatcounter-mcp-server"`: Uses the CLI script directly if installed from PyPI.
-- `"env"`: If installed from PyPI, you may need to provide environment variables directly in the config (since there’s no `.env` file). If installed from source, the `.env` file will be used.
+- `"env"`: If installed from PyPI, you may need to provide environment variables directly in the config (since there's no `.env` file). If installed from source, the `.env` file will be used.
 - `"env": {"PYTHONUNBUFFERED": "1"}`: Ensures output is unbuffered for better logging in Claude.
 
 ### Step 4: Restart Claude Desktop
@@ -301,4 +310,32 @@ List location statistics.
     *   `daily` (boolean, optional): Show daily statistics instead of totals (default: false).
     *   `limit` (integer, optional): Limit number of returned results (1-200, default 20).
     *   `after` (integer, optional): Pagination cursor.
-*   **Returns**: `object` - A list of location statistics and pagination info. 
+*   **Returns**: `object` - A list of location statistics and pagination info.
+
+## Usage
+
+1.  **Set Environment Variables:**
+    Create a `.env` file in your project root or set the environment variables directly:
+    ```
+    GOATCOUNTER_CODE=your_site_code
+    GOATCOUNTER_API_KEY=your_goatcounter_api_key
+    ```
+    You can generate an API key in your Goatcounter account settings.
+
+2.  **Run with FastMCP:**
+    Integrate this server with your FastMCP setup. Refer to the FastMCP documentation for details on connecting MCP servers.
+
+    The server registers tools with the prefix `Goatcounter` (e.g., `Goatcounter.list_sites`).
+
+## Development
+
+*   Install development dependencies: `pip install -e ".[dev]"` (if dev dependencies are specified in `pyproject.toml`)
+*   This project uses `hatch` for building.
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 

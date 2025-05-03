@@ -1,5 +1,7 @@
 import os
 import logging
+import asyncio # Added for sleep
+import random  # Added for jitter
 from typing import Optional, Annotated
 
 from pydantic import BaseModel, Field
@@ -44,20 +46,61 @@ mcp = FastMCP(
     prefix="Goatcounter"
 )
 
+# --- Constants for Backoff ---
+MAX_RETRIES = 5
+BASE_BACKOFF_DELAY = 1.0 # seconds
+
 # --- Helper Function for Error Handling ---
-# Note: This helper now assumes the api_method is already bound to a client instance
 async def _call_api(api_method, **kwargs):
-    try:
-        result = await api_method(**kwargs)
-        # Ensure None is returned correctly if API gives 202/204
-        return result if result is not None else {}
-    except GoatcounterApiClientError as e:
-        logger.error(f"Goatcounter API Client Error: {e}")
-        # Raise a standard exception, FastMCP will handle formatting
-        raise Exception(f"Goatcounter API Error: {e}") from e
-    except Exception as e:
-        logger.exception(f"Unexpected error calling Goatcounter API: {e}")
-        raise Exception(f"An unexpected internal server error occurred: {e}")
+    retries = 0
+    while retries < MAX_RETRIES:
+        try:
+            result = await api_method(**kwargs)
+            # Ensure None is returned correctly if API gives 202/204
+            return result if result is not None else {}
+        except GoatcounterApiClientError as e:
+            # Check for rate limit status code (assuming client provides it)
+            # 429 is the standard HTTP status code for Too Many Requests
+            is_rate_limit = getattr(e, 'status_code', None) == 429
+
+            if is_rate_limit:
+                retries += 1
+                if retries >= MAX_RETRIES:
+                    logger.error(f"Rate limited. Max retries ({MAX_RETRIES}) exceeded.")
+                    raise Exception(f"Goatcounter API rate limit exceeded after {MAX_RETRIES} retries: {e}") from e
+
+                wait_time = None
+                # Try to get wait time from X-Rate-Limit-Reset header
+                headers = getattr(e, 'headers', {})
+                reset_header = headers.get('X-Rate-Limit-Reset')
+                if reset_header:
+                    try:
+                        wait_time = float(reset_header) + 1.0 # Add a 1s buffer
+                        logger.warning(f"Rate limited. Retrying after {wait_time:.2f} seconds (from header). Attempt {retries}/{MAX_RETRIES}.")
+                    except (ValueError, TypeError):
+                        logger.warning("Could not parse X-Rate-Limit-Reset header: {reset_header}")
+                        wait_time = None # Fallback to exponential backoff
+
+                # If header not present or invalid, use exponential backoff
+                if wait_time is None:
+                    backoff_delay = BASE_BACKOFF_DELAY * (2 ** (retries - 1))
+                    jitter = random.uniform(0, 0.5) # Add jitter
+                    wait_time = backoff_delay + jitter
+                    logger.warning(f"Rate limited. Retrying after {wait_time:.2f} seconds (exponential backoff). Attempt {retries}/{MAX_RETRIES}.")
+
+                await asyncio.sleep(wait_time)
+                continue # Retry the API call
+            else:
+                # Handle other API client errors
+                logger.error(f"Goatcounter API Client Error: {e}")
+                raise Exception(f"Goatcounter API Error: {e}") from e
+        except Exception as e:
+            # Handle unexpected errors
+            logger.exception(f"Unexpected error calling Goatcounter API: {e}")
+            raise Exception(f"An unexpected internal server error occurred: {e}")
+
+    # Should not be reached if MAX_RETRIES > 0, but added for safety
+    raise Exception("API call failed after exhausting retries.")
 
 # --- MCP Tool Definitions ---
 
