@@ -98,7 +98,7 @@ uv run goatcounter-mcp-server
 If you installed from source and prefer to run the server using FastMCP's development mode:
 
 ```bash
-fastmcp dev src/goatcounter_mcp_server/main.py
+fastmcp dev src/goatcounter_mcp_server/server.py
 ```
 
 ## Using with Claude Desktop
