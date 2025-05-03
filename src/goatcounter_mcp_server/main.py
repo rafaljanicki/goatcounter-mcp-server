@@ -17,15 +17,25 @@ logger = logging.getLogger(__name__)
 goatcounter_code = os.getenv("GOATCOUNTER_CODE")
 goatcounter_api_key = os.getenv("GOATCOUNTER_API_KEY")
 
-if not goatcounter_code:
-    raise ValueError("GOATCOUNTER_CODE environment variable not set.")
-if not goatcounter_api_key:
-    raise ValueError("GOATCOUNTER_API_KEY environment variable not set.")
+# Global variable to hold the client instance (lazy initialization)
+_api_client_instance: Optional[GoatcounterApiClient] = None
 
-# --- Initialize API Client ---
-# Note: In this simplified setup without FastAPI lifespan, the client is created
-# globally and closed implicitly when the process exits.
-api_client = GoatcounterApiClient(site_code=goatcounter_code, api_key=goatcounter_api_key)
+def get_api_client() -> GoatcounterApiClient:
+    """Gets or initializes the GoatcounterApiClient instance."""
+    global _api_client_instance
+    if _api_client_instance is None:
+        logger.info("Initializing GoatcounterApiClient...")
+        # Check for credentials only when the client is first needed
+        if not goatcounter_code:
+            raise ValueError("GOATCOUNTER_CODE environment variable not set.")
+        if not goatcounter_api_key:
+            raise ValueError("GOATCOUNTER_API_KEY environment variable not set.")
+        _api_client_instance = GoatcounterApiClient(
+            site_code=goatcounter_code,
+            api_key=goatcounter_api_key
+        )
+        logger.info("GoatcounterApiClient initialized.")
+    return _api_client_instance
 
 # --- FastMCP Instance ---
 mcp = FastMCP(
@@ -35,6 +45,7 @@ mcp = FastMCP(
 )
 
 # --- Helper Function for Error Handling ---
+# Note: This helper now assumes the api_method is already bound to a client instance
 async def _call_api(api_method, **kwargs):
     try:
         result = await api_method(**kwargs)
@@ -52,11 +63,13 @@ async def _call_api(api_method, **kwargs):
 
 @mcp.tool(name="get_me", description="Get information about the current Goatcounter user and API key.")
 async def get_me():
-    return await _call_api(api_client.get_me)
+    client = get_api_client()
+    return await _call_api(client.get_me)
 
 @mcp.tool(name="list_sites", description="List all Goatcounter sites accessible with the current API key.")
 async def list_sites():
-    return await _call_api(api_client.list_sites)
+    client = get_api_client()
+    return await _call_api(client.list_sites)
 
 class ListPathsParams(BaseModel):
     limit: Annotated[Optional[int], Field(description="Limit number of returned results (1-200, default 20).")] = 20
@@ -64,7 +77,8 @@ class ListPathsParams(BaseModel):
 
 @mcp.tool(name="list_paths", description="Get an overview of paths on this site (without statistics).")
 async def list_paths(params: ListPathsParams):
-    return await _call_api(api_client.list_paths, limit=params.limit, after=params.after)
+    client = get_api_client()
+    return await _call_api(client.list_paths, limit=params.limit, after=params.after)
 
 class StatsParams(BaseModel):
     start: Annotated[Optional[str], Field(description="Start date (YYYY-MM-DD or relative e.g., '7 days ago').")] = None
@@ -74,7 +88,8 @@ class StatsParams(BaseModel):
 
 @mcp.tool(name="get_stats_total", description="Get total number of pageviews and visitors for the site.")
 async def get_stats_total(params: StatsParams):
-    return await _call_api(api_client.get_stats_total,
+    client = get_api_client()
+    return await _call_api(client.get_stats_total,
                            start=params.start,
                            end=params.end,
                            filter=params.filter,
@@ -86,7 +101,8 @@ class PaginatedStatsParams(StatsParams):
 
 @mcp.tool(name="get_stats_hits", description="List page statistics (pageviews and visitors per path).")
 async def get_stats_hits(params: PaginatedStatsParams):
-    return await _call_api(api_client.get_stats_hits,
+    client = get_api_client()
+    return await _call_api(client.get_stats_hits,
                            start=params.start,
                            end=params.end,
                            filter=params.filter,
@@ -96,7 +112,8 @@ async def get_stats_hits(params: PaginatedStatsParams):
 
 @mcp.tool(name="get_stats_refs", description="List referrer statistics.")
 async def get_stats_refs(params: PaginatedStatsParams):
-    return await _call_api(api_client.get_stats_refs,
+    client = get_api_client()
+    return await _call_api(client.get_stats_refs,
                            start=params.start,
                            end=params.end,
                            filter=params.filter,
@@ -106,7 +123,8 @@ async def get_stats_refs(params: PaginatedStatsParams):
 
 @mcp.tool(name="get_stats_browsers", description="List browser statistics.")
 async def get_stats_browsers(params: PaginatedStatsParams):
-    return await _call_api(api_client.get_stats_browsers,
+    client = get_api_client()
+    return await _call_api(client.get_stats_browsers,
                            start=params.start,
                            end=params.end,
                            filter=params.filter,
@@ -116,7 +134,8 @@ async def get_stats_browsers(params: PaginatedStatsParams):
 
 @mcp.tool(name="get_stats_systems", description="List operating system statistics.")
 async def get_stats_systems(params: PaginatedStatsParams):
-    return await _call_api(api_client.get_stats_systems,
+    client = get_api_client()
+    return await _call_api(client.get_stats_systems,
                            start=params.start,
                            end=params.end,
                            filter=params.filter,
@@ -126,7 +145,8 @@ async def get_stats_systems(params: PaginatedStatsParams):
 
 @mcp.tool(name="get_stats_sizes", description="List screen size statistics.")
 async def get_stats_sizes(params: PaginatedStatsParams):
-    return await _call_api(api_client.get_stats_sizes,
+    client = get_api_client()
+    return await _call_api(client.get_stats_sizes,
                            start=params.start,
                            end=params.end,
                            filter=params.filter,
@@ -136,7 +156,8 @@ async def get_stats_sizes(params: PaginatedStatsParams):
 
 @mcp.tool(name="get_stats_locations", description="List location statistics.")
 async def get_stats_locations(params: PaginatedStatsParams):
-    return await _call_api(api_client.get_stats_locations,
+    client = get_api_client()
+    return await _call_api(client.get_stats_locations,
                            start=params.start,
                            end=params.end,
                            filter=params.filter,
