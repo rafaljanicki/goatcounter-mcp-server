@@ -3,7 +3,6 @@ import os
 import logging
 import asyncio # Added for sleep
 import random  # Added for jitter
-import base64 # Added import
 from typing import Optional, Annotated, Dict, Any
 
 from pydantic import BaseModel, Field
@@ -33,11 +32,9 @@ class GoatcounterApiClient:
         self.base_url = base_url_template.format(site_code=site_code)
         self.api_key = api_key
         self.client = httpx.AsyncClient(base_url=self.base_url, timeout=30.0)
-        # Basic auth: username is "apitoken", password is the API key
-        auth_bytes = f"apitoken:{self.api_key}".encode('utf-8')
-        auth_header = base64.b64encode(auth_bytes).decode('utf-8')
+        # Use Bearer token authentication as per primary documentation
         self.headers = {
-            "Authorization": f"Basic {auth_header}",
+            "Authorization": f"Bearer {self.api_key}",
             "Accept": "application/json",
             "Content-Type": "application/json"
         }
