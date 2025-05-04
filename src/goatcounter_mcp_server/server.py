@@ -3,6 +3,7 @@ import os
 import logging
 import asyncio # Added for sleep
 import random  # Added for jitter
+import base64 # Added import
 from typing import Optional, Annotated, Dict, Any
 
 from pydantic import BaseModel, Field
