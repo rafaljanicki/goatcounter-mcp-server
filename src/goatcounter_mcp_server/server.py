@@ -85,12 +85,12 @@ class GoatcounterApiClient:
             params["After"] = after
         return await self._request("GET", "/paths", params=params)
 
-    async def get_stats_total(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, daily: bool = False) -> Dict[str, Any]:
+    async def get_stats_total(self, start: Optional[str] = None, end: Optional[str] = None, include_paths: Optional[list[int]] = None) -> Dict[str, Any]:
         """Get total number of pageviews and visitors."""
-        params: Dict[str, Any] = {"daily": daily}
+        params: Dict[str, Any] = {} # Removed daily param
         if start: params["start"] = start
         if end: params["end"] = end
-        if filter: params["filter"] = filter
+        if include_paths: params["include_paths"] = include_paths # Changed from filter
         return await self._request("GET", "/stats/total", params=params)
 
     async def get_stats_hits(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
@@ -259,8 +259,7 @@ async def list_paths(params: ListPathsParams):
 class StatsParams(BaseModel):
     start: Annotated[Optional[str], Field(description="Start date (YYYY-MM-DD or relative e.g., '7 days ago').")] = None
     end: Annotated[Optional[str], Field(description="End date (YYYY-MM-DD or relative e.g., 'yesterday').")] = None
-    filter: Annotated[Optional[str], Field(description="Filter paths (e.g., '/blog*').")] = None
-    daily: Annotated[Optional[bool], Field(description="Show daily statistics instead of totals.")] = False
+    include_paths: Annotated[Optional[list[int]], Field(description="Filter by specific path IDs.")] = None
 
 @mcp.tool(name="get_stats_total", description="Get total number of pageviews and visitors for the site.")
 async def get_stats_total(params: StatsParams):
@@ -268,8 +267,7 @@ async def get_stats_total(params: StatsParams):
     return await _call_api(client.get_stats_total,
                            start=params.start,
                            end=params.end,
-                           filter=params.filter,
-                           daily=params.daily)
+                           include_paths=params.include_paths)
 
 class PaginatedStatsParams(StatsParams):
     limit: Annotated[Optional[int], Field(description="Limit number of returned results (1-200, default 20).")] = 20
