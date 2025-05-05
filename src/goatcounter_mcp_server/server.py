@@ -79,14 +79,20 @@ class GoatcounterApiClient:
         return await self._request("GET", "/sites")
 
     async def list_paths(self, limit: int = 20, after: Optional[int] = None) -> Dict[str, Any]:
-        """Get an overview of paths on this site (without statistics)."""
+        """Get an overview of paths on this site (without statistics).
+
+        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        """
         params = {"Limit": limit}
         if after is not None:
             params["After"] = after
         return await self._request("GET", "/paths", params=params)
 
     async def get_stats_total(self, start: Optional[str] = None, end: Optional[str] = None, include_paths: Optional[list[int]] = None) -> Dict[str, Any]:
-        """Get total number of pageviews and visitors."""
+        """Get total number of pageviews and visitors.
+
+        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        """
         params: Dict[str, Any] = {} # Removed daily param
         if start: params["start"] = start
         if end: params["end"] = end
@@ -94,7 +100,10 @@ class GoatcounterApiClient:
         return await self._request("GET", "/stats/total", params=params)
 
     async def get_stats_hits(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
-        """List pages."""
+        """List pages.
+
+        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        """
         params: Dict[str, Any] = {"limit": limit, "daily": daily}
         if start: params["start"] = start
         if end: params["end"] = end
@@ -103,7 +112,10 @@ class GoatcounterApiClient:
         return await self._request("GET", "/stats/hits", params=params)
 
     async def get_stats_refs(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
-        """List referrers."""
+        """List referrers.
+
+        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        """
         params: Dict[str, Any] = {"limit": limit, "daily": daily}
         if start: params["start"] = start
         if end: params["end"] = end
@@ -112,7 +124,10 @@ class GoatcounterApiClient:
         return await self._request("GET", "/stats/refs", params=params)
 
     async def get_stats_browsers(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
-        """List browsers."""
+        """List browsers.
+
+        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        """
         params: Dict[str, Any] = {"limit": limit, "daily": daily}
         if start: params["start"] = start
         if end: params["end"] = end
@@ -121,7 +136,10 @@ class GoatcounterApiClient:
         return await self._request("GET", "/stats/browsers", params=params)
 
     async def get_stats_systems(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
-        """List operating systems."""
+        """List operating systems.
+
+        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        """
         params: Dict[str, Any] = {"limit": limit, "daily": daily}
         if start: params["start"] = start
         if end: params["end"] = end
@@ -130,7 +148,10 @@ class GoatcounterApiClient:
         return await self._request("GET", "/stats/systems", params=params)
 
     async def get_stats_sizes(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
-        """List screen sizes."""
+        """List screen sizes.
+
+        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        """
         params: Dict[str, Any] = {"limit": limit, "daily": daily}
         if start: params["start"] = start
         if end: params["end"] = end
@@ -139,7 +160,10 @@ class GoatcounterApiClient:
         return await self._request("GET", "/stats/sizes", params=params)
 
     async def get_stats_locations(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
-        """List locations."""
+        """List locations.
+
+        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        """
         params: Dict[str, Any] = {"limit": limit, "daily": daily}
         if start: params["start"] = start
         if end: params["end"] = end
@@ -257,8 +281,8 @@ async def list_paths(params: ListPathsParams):
     return await _call_api(client.list_paths, limit=params.limit, after=params.after)
 
 class StatsParams(BaseModel):
-    start: Annotated[Optional[str], Field(description="Start date (YYYY-MM-DD or relative e.g., '7 days ago').")] = None
-    end: Annotated[Optional[str], Field(description="End date (YYYY-MM-DD or relative e.g., 'yesterday').")] = None
+    start: Annotated[Optional[str], Field(description="Start date (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, or relative e.g., '7 days ago'). UTC.")] = None
+    end: Annotated[Optional[str], Field(description="End date (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, or relative e.g., 'yesterday'). UTC.")] = None
     include_paths: Annotated[Optional[list[int]], Field(description="Filter by specific path IDs.")] = None
 
 @mcp.tool(name="get_stats_total", description="Get total number of pageviews and visitors for the site.")
@@ -270,6 +294,8 @@ async def get_stats_total(params: StatsParams):
                            include_paths=params.include_paths)
 
 class PaginatedStatsParams(StatsParams):
+    filter: Annotated[Optional[str], Field(description="Filter results (exact meaning depends on endpoint).")] = None
+    daily: Annotated[Optional[bool], Field(description="Group results by day instead of for the entire period.")] = False # Added daily back based on spec analysis
     limit: Annotated[Optional[int], Field(description="Limit number of returned results (1-200, default 20).")] = 20
     after: Annotated[Optional[int], Field(description="Pagination cursor (specific meaning depends on endpoint).")] = None
 
