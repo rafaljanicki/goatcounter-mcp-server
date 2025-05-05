@@ -5,7 +5,7 @@ packages = ["src/goatcounter_mcp_server"]
 
 [project]
 name = "goatcounter-mcp-server"
-version = "0.1.9"
+version = "0.2.0"
 description = "Goatcounter API tool for FastMCP"
 readme = "README.md"
 requires-python = ">=3.10"
