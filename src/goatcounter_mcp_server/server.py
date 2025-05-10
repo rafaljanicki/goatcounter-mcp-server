@@ -121,7 +121,7 @@ class GoatcounterApiClient:
         if end: params["end"] = end
         if filter: params["filter"] = filter
         if after is not None: params["after"] = after
-        return await self._request("GET", "/stats/refs", params=params)
+        return await self._request("GET", "/stats/toprefs", params=params)
 
     async def get_stats_browsers(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
         """List browsers.
