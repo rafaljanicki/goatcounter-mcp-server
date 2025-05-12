@@ -111,60 +111,60 @@ class GoatcounterApiClient:
         if after is not None: params["after"] = after
         return await self._request("GET", "/stats/hits", params=params)
 
-    async def get_stats_refs(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
+    async def get_stats_refs(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None) -> Dict[str, Any]:
         """List referrers.
 
         Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
         """
-        params: Dict[str, Any] = {"limit": limit, "daily": daily}
+        params: Dict[str, Any] = {"limit": limit}
         if start: params["start"] = start
         if end: params["end"] = end
         if filter: params["filter"] = filter
         if after is not None: params["after"] = after
         return await self._request("GET", "/stats/toprefs", params=params)
 
-    async def get_stats_browsers(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
+    async def get_stats_browsers(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None) -> Dict[str, Any]:
         """List browsers.
 
         Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
         """
-        params: Dict[str, Any] = {"limit": limit, "daily": daily}
+        params: Dict[str, Any] = {"limit": limit}
         if start: params["start"] = start
         if end: params["end"] = end
         if filter: params["filter"] = filter
         if after is not None: params["after"] = after
         return await self._request("GET", "/stats/browsers", params=params)
 
-    async def get_stats_systems(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
+    async def get_stats_systems(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None) -> Dict[str, Any]:
         """List operating systems.
 
         Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
         """
-        params: Dict[str, Any] = {"limit": limit, "daily": daily}
+        params: Dict[str, Any] = {"limit": limit}
         if start: params["start"] = start
         if end: params["end"] = end
         if filter: params["filter"] = filter
         if after is not None: params["after"] = after
         return await self._request("GET", "/stats/systems", params=params)
 
-    async def get_stats_sizes(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
+    async def get_stats_sizes(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None) -> Dict[str, Any]:
         """List screen sizes.
 
         Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
         """
-        params: Dict[str, Any] = {"limit": limit, "daily": daily}
+        params: Dict[str, Any] = {"limit": limit}
         if start: params["start"] = start
         if end: params["end"] = end
         if filter: params["filter"] = filter
         if after is not None: params["after"] = after
         return await self._request("GET", "/stats/sizes", params=params)
 
-    async def get_stats_locations(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
+    async def get_stats_locations(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None) -> Dict[str, Any]:
         """List locations.
 
         Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
         """
-        params: Dict[str, Any] = {"limit": limit, "daily": daily}
+        params: Dict[str, Any] = {"limit": limit}
         if start: params["start"] = start
         if end: params["end"] = end
         if filter: params["filter"] = filter
@@ -318,8 +318,7 @@ async def get_stats_refs(params: PaginatedStatsParams):
                            end=params.end,
                            filter=params.filter,
                            limit=params.limit,
-                           after=params.after,
-                           daily=params.daily)
+                           after=params.after)
 
 @mcp.tool(name="get_stats_browsers", description="List browser statistics.")
 async def get_stats_browsers(params: PaginatedStatsParams):
@@ -329,8 +328,7 @@ async def get_stats_browsers(params: PaginatedStatsParams):
                            end=params.end,
                            filter=params.filter,
                            limit=params.limit,
-                           after=params.after,
-                           daily=params.daily)
+                           after=params.after)
 
 @mcp.tool(name="get_stats_systems", description="List operating system statistics.")
 async def get_stats_systems(params: PaginatedStatsParams):
@@ -340,8 +338,7 @@ async def get_stats_systems(params: PaginatedStatsParams):
                            end=params.end,
                            filter=params.filter,
                            limit=params.limit,
-                           after=params.after,
-                           daily=params.daily)
+                           after=params.after)
 
 @mcp.tool(name="get_stats_sizes", description="List screen size statistics.")
 async def get_stats_sizes(params: PaginatedStatsParams):
@@ -351,8 +348,7 @@ async def get_stats_sizes(params: PaginatedStatsParams):
                            end=params.end,
                            filter=params.filter,
                            limit=params.limit,
-                           after=params.after,
-                           daily=params.daily)
+                           after=params.after)
 
 @mcp.tool(name="get_stats_locations", description="List location statistics.")
 async def get_stats_locations(params: PaginatedStatsParams):
@@ -362,8 +358,7 @@ async def get_stats_locations(params: PaginatedStatsParams):
                            end=params.end,
                            filter=params.filter,
                            limit=params.limit,
-                           after=params.after,
-                           daily=params.daily)
+                           after=params.after)
 
 # Main server execution
 def run():
