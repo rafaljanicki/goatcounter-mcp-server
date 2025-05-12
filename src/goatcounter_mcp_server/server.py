@@ -79,9 +79,12 @@ class GoatcounterApiClient:
         return await self._request("GET", "/sites")
 
     async def list_paths(self, limit: int = 20, after: Optional[int] = None) -> Dict[str, Any]:
-        """Get an overview of paths on this site (without statistics).
-
-        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        """
+        Get an overview of paths on this site (without statistics).
+        
+        Parameters:
+            limit (int, optional): Limit number of returned results (1-200, default 20).
+            after (int, optional): Only select paths after this ID, for pagination.
         """
         params = {"Limit": limit}
         if after is not None:
@@ -89,20 +92,31 @@ class GoatcounterApiClient:
         return await self._request("GET", "/paths", params=params)
 
     async def get_stats_total(self, start: Optional[str] = None, end: Optional[str] = None, include_paths: Optional[list[int]] = None) -> Dict[str, Any]:
-        """Get total number of pageviews and visitors.
-
-        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
         """
-        params: Dict[str, Any] = {} # Removed daily param
+        Get total number of pageviews and visitors.
+
+        Parameters:
+            start (str, optional): Start date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            end (str, optional): End date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            include_paths (list[int], optional): Filter by specific path IDs.
+        """
+        params: Dict[str, Any] = {}
         if start: params["start"] = start
         if end: params["end"] = end
-        if include_paths: params["include_paths"] = include_paths # Changed from filter
+        if include_paths: params["include_paths"] = include_paths
         return await self._request("GET", "/stats/total", params=params)
 
     async def get_stats_hits(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None, daily: bool = False) -> Dict[str, Any]:
-        """List pages.
+        """
+        List page statistics (pageviews and visitors per path).
 
-        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        Parameters:
+            start (str, optional): Start date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            end (str, optional): End date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            filter (str, optional): Filter results (exact meaning depends on endpoint).
+            limit (int, optional): Limit number of returned results (1-100, default 20).
+            after (int, optional): Pagination cursor.
+            daily (bool, optional): Group results by day instead of for the entire period.
         """
         params: Dict[str, Any] = {"limit": limit, "daily": daily}
         if start: params["start"] = start
@@ -112,9 +126,15 @@ class GoatcounterApiClient:
         return await self._request("GET", "/stats/hits", params=params)
 
     async def get_stats_refs(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None) -> Dict[str, Any]:
-        """List referrers.
+        """
+        List referrer statistics.
 
-        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        Parameters:
+            start (str, optional): Start date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            end (str, optional): End date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            filter (str, optional): Filter results (exact meaning depends on endpoint).
+            limit (int, optional): Limit number of returned results (1-100, default 20).
+            after (int, optional): Pagination cursor.
         """
         params: Dict[str, Any] = {"limit": limit}
         if start: params["start"] = start
@@ -124,9 +144,15 @@ class GoatcounterApiClient:
         return await self._request("GET", "/stats/toprefs", params=params)
 
     async def get_stats_browsers(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None) -> Dict[str, Any]:
-        """List browsers.
+        """
+        List browser statistics.
 
-        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        Parameters:
+            start (str, optional): Start date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            end (str, optional): End date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            filter (str, optional): Filter results (exact meaning depends on endpoint).
+            limit (int, optional): Limit number of returned results (1-100, default 20).
+            after (int, optional): Pagination cursor.
         """
         params: Dict[str, Any] = {"limit": limit}
         if start: params["start"] = start
@@ -136,9 +162,15 @@ class GoatcounterApiClient:
         return await self._request("GET", "/stats/browsers", params=params)
 
     async def get_stats_systems(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None) -> Dict[str, Any]:
-        """List operating systems.
+        """
+        List operating system statistics.
 
-        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        Parameters:
+            start (str, optional): Start date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            end (str, optional): End date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            filter (str, optional): Filter results (exact meaning depends on endpoint).
+            limit (int, optional): Limit number of returned results (1-100, default 20).
+            after (int, optional): Pagination cursor.
         """
         params: Dict[str, Any] = {"limit": limit}
         if start: params["start"] = start
@@ -148,9 +180,15 @@ class GoatcounterApiClient:
         return await self._request("GET", "/stats/systems", params=params)
 
     async def get_stats_sizes(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None) -> Dict[str, Any]:
-        """List screen sizes.
+        """
+        List screen size statistics.
 
-        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        Parameters:
+            start (str, optional): Start date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            end (str, optional): End date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            filter (str, optional): Filter results (exact meaning depends on endpoint).
+            limit (int, optional): Limit number of returned results (1-100, default 20).
+            after (int, optional): Pagination cursor.
         """
         params: Dict[str, Any] = {"limit": limit}
         if start: params["start"] = start
@@ -160,9 +198,15 @@ class GoatcounterApiClient:
         return await self._request("GET", "/stats/sizes", params=params)
 
     async def get_stats_locations(self, start: Optional[str] = None, end: Optional[str] = None, filter: Optional[str] = None, limit: int = 20, after: Optional[int] = None) -> Dict[str, Any]:
-        """List locations.
+        """
+        List location statistics.
 
-        Dates can be absolute (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS) or relative ('today', 'N days ago').
+        Parameters:
+            start (str, optional): Start date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            end (str, optional): End date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).
+            filter (str, optional): Filter results (exact meaning depends on endpoint).
+            limit (int, optional): Limit number of returned results (1-100, default 20).
+            after (int, optional): Pagination cursor.
         """
         params: Dict[str, Any] = {"limit": limit}
         if start: params["start"] = start
