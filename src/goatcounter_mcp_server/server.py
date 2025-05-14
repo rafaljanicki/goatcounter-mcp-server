@@ -316,7 +316,7 @@ async def list_sites():
     return await _call_api(client.list_sites)
 
 class ListPathsParams(BaseModel):
-    limit: Annotated[Optional[int], Field(description="Limit number of returned results (1-200, default 20).")] = 20
+    limit: Annotated[Optional[int], Field(description="Limit number of returned results (1-200, default 20).") ] = 20
     after: Annotated[Optional[int], Field(description="Only select paths after this ID, for pagination.")] = None
 
 @mcp.tool(name="list_paths", description="Get an overview of paths on this site (without statistics).")
@@ -325,8 +325,8 @@ async def list_paths(params: ListPathsParams):
     return await _call_api(client.list_paths, limit=params.limit, after=params.after)
 
 class StatsParams(BaseModel):
-    start: Annotated[Optional[str], Field(description="Start date (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, or relative e.g., '7 days ago'). UTC.")] = None
-    end: Annotated[Optional[str], Field(description="End date (YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, or relative e.g., 'yesterday'). UTC.")] = None
+    start: Annotated[Optional[str], Field(description="Start date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).") ] = None
+    end: Annotated[Optional[str], Field(description="End date in 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM:SS' (UTC).") ] = None
     include_paths: Annotated[Optional[list[int]], Field(description="Filter by specific path IDs.")] = None
 
 @mcp.tool(name="get_stats_total", description="Get total number of pageviews and visitors for the site.")
@@ -338,10 +338,10 @@ async def get_stats_total(params: StatsParams):
                            include_paths=params.include_paths)
 
 class PaginatedStatsParams(StatsParams):
-    filter: Annotated[Optional[str], Field(description="Filter results (exact meaning depends on endpoint).")] = None
-    daily: Annotated[Optional[bool], Field(description="Group results by day instead of for the entire period.")] = False # Added daily back based on spec analysis
-    limit: Annotated[Optional[int], Field(description="Limit number of returned results (1-200, default 20).")] = 20
-    after: Annotated[Optional[int], Field(description="Pagination cursor (specific meaning depends on endpoint).")] = None
+    filter: Annotated[Optional[str], Field(description="Filter results (exact meaning depends on endpoint).") ] = None
+    daily: Annotated[Optional[bool], Field(description="Group results by day instead of for the entire period (only for /stats/hits endpoint).") ] = False
+    limit: Annotated[Optional[int], Field(description="Limit number of returned results (1-100, default 20).") ] = 20
+    after: Annotated[Optional[int], Field(description="Pagination cursor (specific meaning depends on endpoint).") ] = None
 
 @mcp.tool(name="get_stats_hits", description="List page statistics (pageviews and visitors per path).")
 async def get_stats_hits(params: PaginatedStatsParams):
