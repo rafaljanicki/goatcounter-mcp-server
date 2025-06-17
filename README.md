@@ -1,8 +1,7 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/rafaljanicki-goatcounter-mcp-server-badge.png)](https://mseep.ai/app/rafaljanicki-goatcounter-mcp-server)
-
 # Goatcounter MCP Server
 
 [![smithery badge](https://smithery.ai/badge/@rafaljanicki/goatcounter-mcp-server)](https://smithery.ai/server/@rafaljanicki/goatcounter-mcp-server)
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/rafaljanicki-goatcounter-mcp-server-badge.png)](https://mseep.ai/app/rafaljanicki-goatcounter-mcp-server)
 
 ## Overview
 
